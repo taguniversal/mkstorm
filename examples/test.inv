@@ -1,0 +1,5 @@
+# Basic OR gate definition
+OR[($A,$B)(OUT<>) [$A$B] 00:0 01:1 10:1 11:1]
+
+# Test the OR gate
+R<OR(0,1)>
