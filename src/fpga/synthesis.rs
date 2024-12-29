@@ -10,7 +10,7 @@ pub struct FpgaCircuit {
 }
 
 impl FpgaCircuit {
-    pub fn new(definition: Definition, config: &FpgaConfig) -> Result<Self, Error> {
+    pub fn new(definition: Definition, config: &FpgaConfig) -> Result<Self> {
         // Allocate FPGA region for this circuit
         let region = FpgaRegionMapping::new(config, FpgaRegion::Configuration, 1024)?;
         
@@ -21,9 +21,10 @@ impl FpgaCircuit {
         Ok(circuit)
     }
 
-    fn synthesize(&self) -> Result<(), Error> {
+    fn synthesize(&self) -> Result<()> {
         // Convert resolution patterns to LUTs
         // Generate NCL gates
         // Configure routing
+        Ok(()) 
     }
 }
