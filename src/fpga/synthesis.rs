@@ -1,8 +1,7 @@
-// src/fpga/synthesis.rs
-use crate::parser::ast::{Definition, ResolutionTable};
-use crate::sel4::fpga::{FpgaConfig, FpgaRegionMapping};
-use crate::sel4::fpga_config::{FpgaConfig, FpgaRegion, FpgaRegionMapping};
 use crate::sel4::{Error, Result};
+use crate::parser::ast::{Definition, ResolutionTable};
+use crate::sel4::fpga_config::{FpgaConfig, FpgaRegion, FpgaRegionMapping};
+
 
 
 pub struct FpgaCircuit {

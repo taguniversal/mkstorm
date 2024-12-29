@@ -14,12 +14,6 @@ pub struct FpgaConfig {
    base_addr: Word,
 }
 
-#[derive(Debug)]
-pub enum FpgaRegion {
-   Configuration,
-   IO,
-   BlockRAM,
-}
 
 impl FpgaConfig {
    pub fn new(cap: CPtr, base_addr: Word) -> Self {
