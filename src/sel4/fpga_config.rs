@@ -34,13 +34,13 @@ impl FpgaConfig {
    }
 
    // Map FPGA memory region
-   pub fn map_region(&self, region: FpgaRegion, size: usize) -> Result<*mut u8> {
+   pub fn map_region(&self, _region: FpgaRegion, _size: usize) -> Result<*mut u8> {
        // TODO: Use seL4 to map FPGA memory region into our address space
        Ok(std::ptr::null_mut())
    }
 
    // Set up interrupt handler
-   pub fn setup_interrupt(&mut self, handler: Box<dyn Fn() -> Result<()>>) -> Result<()> {
+   pub fn setup_interrupt(&mut self, _handler: Box<dyn Fn() -> Result<()>>) -> Result<()> {
        // TODO: Configure FPGA interrupt and seL4 notification
        Ok(())
    }
@@ -82,7 +82,7 @@ pub struct FpgaRegionMapping {
 }
 
 impl FpgaRegionMapping {
-   pub fn new(config: &FpgaConfig, region: FpgaRegion, size: usize) -> Result<Self> {
+   pub fn new(config: &mut FpgaConfig, region: FpgaRegion, size: usize) -> Result<Self> {
        let base = config.map_region(region.clone(), size)?;
        Ok(FpgaRegionMapping {
            memory: FpgaMemory::new(base, size),

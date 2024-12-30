@@ -1,5 +1,5 @@
-use crate::sel4::{Error, Result};
-use crate::parser::ast::{Definition, ResolutionTable};
+use crate::sel4::{Result};
+use crate::parser::ast::{Definition};
 use crate::sel4::fpga_config::{FpgaConfig, FpgaRegion, FpgaRegionMapping};
 
 
@@ -28,18 +28,18 @@ pub struct FpgaCircuit {
 }
 
 impl FpgaCircuit {
-    pub fn new(definition: Definition, config: &FpgaConfig) -> Result<Self> {
+    pub fn new(definition: Definition, config: &mut FpgaConfig) -> Result<Self> {
         // Allocate FPGA region for this circuit
         let region = FpgaRegionMapping::new(config, FpgaRegion::Configuration, 1024)?;
         
         // Convert resolution table to hardware
-        let circuit = Self { definition, region };
+        let mut circuit = Self { definition, region };
         circuit.synthesize()?;
         
         Ok(circuit)
     }
 
-    fn allocate_register(&self) -> Result<u32> {
+    fn allocate_register(&mut self) -> Result<u32> {
         // For now, use a simple incrementing counter for resource allocation
         static mut NEXT_REG: u32 = 0;
         unsafe {
@@ -65,7 +65,7 @@ impl FpgaCircuit {
         }
     }
  
-    fn create_completion_detection(&self) -> Result<NclCompletion> {
+    fn create_completion_detection(&mut self) -> Result<NclCompletion> {
         // Create completion detection circuit
         let completion = NclCompletion {
             data_detect: self.allocate_register()?,
@@ -79,7 +79,7 @@ impl FpgaCircuit {
         Ok(completion)
     }
  
-    fn configure_completion(&self, completion: &NclCompletion) -> Result<()> {
+    fn configure_completion(&mut self, completion: &NclCompletion) -> Result<()> {
         // Write completion detection configuration
         // This creates an OR tree of all data/null rails
         let config_word = 0xFFFF_FFFF;  // Full OR configuration
@@ -97,7 +97,7 @@ impl FpgaCircuit {
     }
  
     fn configure_routing(
-        &self,
+        &mut self,
         inputs: &[NclRegister],
         luts: &[LookupTable],
         completion: &NclCompletion
@@ -136,23 +136,26 @@ impl FpgaCircuit {
     }
  
     fn configure_route(
-        &self,
+        &mut self,
         from: u32,
         to: u32,
         bit_position: usize,
         value: u32
     ) -> Result<()> {
-        // Write routing configuration to FPGA
-        let route_config = (from << 16) | (to << 8) | (bit_position as u32);
+        // Convert the route configuration to usize
+        let route_config = ((from as usize) << 16) | 
+                          ((to as usize) << 8) | 
+                          bit_position;
+        
         self.region.write_word(
             0x10000 + (4 * from as usize),  // Routing configuration area
-            route_config | (value << 31)  // Include desired value
+            route_config | ((value as usize) << 31)  // Include desired value
         )?;
         
         Ok(())
     }
 
-    fn synthesize(&self) -> Result<()> {
+    fn synthesize(&mut self) -> Result<()> {
         // First, create NULL Convention Logic registers for inputs
         let ncl_inputs = self.create_ncl_inputs()?;
         

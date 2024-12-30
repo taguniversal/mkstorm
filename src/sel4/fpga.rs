@@ -13,7 +13,7 @@ pub enum GpioDirection {
 }
 
 impl GpioOps for FpgaGpio {
-   fn configure(&self, config: GpioConfig) -> Result<()> {
+   fn configure(&self, _config: GpioConfig) -> Result<()> {
        // TODO: Implement FPGA pin configuration through seL4
        // This will need to:
        // 1. Use seL4 syscall to access FPGA configuration space
@@ -22,7 +22,7 @@ impl GpioOps for FpgaGpio {
        Ok(())
    }
 
-   fn write(&self, value: bool) -> Result<()> {
+   fn write(&self, _value: bool) -> Result<()> {
        match self.direction {
            GpioDirection::Output => {
                // TODO: Implement FPGA pin write
