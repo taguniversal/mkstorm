@@ -171,14 +171,16 @@ impl FpgaCircuit {
         Ok(())
     }
 
-    fn create_ncl_inputs(&self) -> Result<Vec<NclRegister>> {
+    fn create_ncl_inputs(&mut self) -> Result<Vec<NclRegister>> {
+        // Collect inputs first to avoid borrowing conflict
+        let inputs: Vec<String> = self.definition.inputs.iter().cloned().collect();
+        
         let mut registers = Vec::new();
-        for input in &self.definition.inputs {
-            // Each NCL input needs data and null detection
+        for input in inputs {
             let reg = NclRegister {
                 data_rail: self.allocate_register()?,
                 null_rail: self.allocate_register()?,
-                name: input.clone(),
+                name: input,
             };
             registers.push(reg);
         }
