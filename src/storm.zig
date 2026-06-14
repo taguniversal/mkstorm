@@ -27,24 +27,32 @@ pub const Storm = struct {
         return self.state;
     }
 
-    pub fn ingest(self: *Storm, payload: []const u8) record.Record {
-        const index = self.nextIndex();
+    pub fn ingest(
+        self: *Storm,
+        psi_text: []const u8,
+        long_count: u64,
+        short_count: u32,
+        payload: []const u8,
+    ) record.Record {
+        _ = psi_text;
 
         return .{
             .originator_id = self.originator_id,
-            .index = index,
-            .long_count = self.long_count,
-            .short_count = 0,
+            .psi = self.state,
+            .long_count = long_count,
+            .short_count = @intCast(short_count),
             .payload = payload,
         };
     }
+    
 
     pub fn append(
         self: *Storm,
         allocator: std.mem.Allocator,
         payload: []const u8,
     ) !record.Record {
-        const rec = self.ingest(payload);
+        _ = self.nextIndex();
+        const rec = self.ingest("", self.long_count, 0, payload);
         try self.records.append(allocator, rec);
         return rec;
     }

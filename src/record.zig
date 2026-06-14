@@ -5,7 +5,7 @@ pub const Psi = u128;
 
 pub const Record = struct {
     originator_id: Id,
-    index: Psi,
+    psi: Psi,
     long_count: u64,
     short_count: u16,
     payload: []const u8,
