@@ -44,15 +44,13 @@ pub const Storm = struct {
             .payload = payload,
         };
     }
-    
 
     pub fn append(
         self: *Storm,
         allocator: std.mem.Allocator,
         payload: []const u8,
     ) !record.Record {
-        _ = self.nextIndex();
-        const rec = self.ingest("", self.long_count, 0, payload);
+        const rec = self.ingest(payload);
         try self.records.append(allocator, rec);
         return rec;
     }
