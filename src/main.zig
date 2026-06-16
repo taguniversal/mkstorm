@@ -65,6 +65,11 @@ pub fn main(init: std.process.Init) !void {
         arg_offset = 3;
     }
 
+    if (args.len == arg_offset + 1 and std.mem.eql(u8, args[arg_offset], "--query-all")) {
+        try store.queryAllJsonl(io, store_path, stdout_writer);
+        try stdout_writer.flush();
+        return;
+    }
 
     if (args.len == arg_offset + 2 and std.mem.eql(u8, args[arg_offset], "--query")) {
         const psi = args[arg_offset + 1];
@@ -77,10 +82,23 @@ pub fn main(init: std.process.Init) !void {
         try stdout_writer.print(
             \\Usage:
             \\  mkstorm --store <storage_path> <psi> <long_count:u64> <short_count:u32> <payload>
+            \\  mkstorm --store <storage_path> --query <psi>
+            \\  mkstorm --store <storage_path> --query-all
             \\
-            \\Example:
+            \\Examples:
             \\  mkstorm --store "data/" "[<:4aa0da9e7b0a5fd5985ab55c0f0192fe:>]" 1 0 "memo text"
             \\
+            \\  mkstorm --store "data/" --query "[<:4aa0da9e7b0a5fd5985ab55c0f0192fe:>]"
+            \\
+            \\  mkstorm --store "data/" --query-all
+            \\
+            \\Description:
+            \\  Records are stored as JSONL in:
+            \\    <storage_path>/mkstorm.records.jsonl
+            \\
+            \\  Ingest appends a new record.
+            \\  Query returns all records matching a PSI block.
+            \\  Query-all streams the entire record store.
         , .{});
         try stdout_writer.flush();
         return;

@@ -25,6 +25,26 @@ pub fn queryJsonl(
     }
 }
 
+pub fn queryAllJsonl(
+    io: std.Io,
+    path: []const u8,
+    writer: anytype,
+) !void {
+    var file = try std.Io.Dir.cwd().openFile(io, path, .{});
+    defer file.close(io);
+
+    var buffer: [8192]u8 = undefined;
+    var reader = file.reader(io, &buffer);
+
+    while (true) {
+        const line = reader.interface.takeDelimiterInclusive('\n') catch |err| switch (err) {
+            error.EndOfStream => break,
+            else => return err,
+        };
+
+        try writer.print("{s}", .{line});
+    }
+}
 pub fn appendJsonl(io: std.Io, path: []const u8, rec: record.Record) !void {
     var file = try std.Io.Dir.cwd().createFile(io, path, .{
         .read = true,
