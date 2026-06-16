@@ -56,6 +56,24 @@ fn usage(writer: anytype) !void {
     , .{});
 }
 
+fn trimWhitespace(s: []const u8) []const u8 {
+    return std.mem.trim(u8, s, " \t\r\n");
+}
+
+fn rejectBadEncoding(value: []const u8) !void {
+    if (value.len >= 2) {
+        // UTF-16 little-endian BOM
+        if (value[0] == 0xff and value[1] == 0xfe) {
+            return error.UnsupportedUtf16LittleEndian;
+        }
+
+        // UTF-16 big-endian BOM
+        if (value[0] == 0xfe and value[1] == 0xff) {
+            return error.UnsupportedUtf16BigEndian;
+        }
+    }
+}
+
 pub fn main(init: std.process.Init) !void {
     const arena = init.arena.allocator();
     const args = try init.minimal.args.toSlice(arena);
@@ -75,7 +93,7 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
     if (args.len >= 3 and std.mem.eql(u8, args[1], "--store")) {
-        store_dir = args[2];
+        store_dir = trimWhitespace(args[2]);
         arg_offset = 3;
     }
 
@@ -88,11 +106,13 @@ pub fn main(init: std.process.Init) !void {
             return;
         }
 
-        const genesis = args[arg_offset + 1];
-        const block = args[arg_offset + 2];
-        const long_count = try std.fmt.parseInt(u64, args[arg_offset + 3], 10);
-        const short_count = try std.fmt.parseInt(u32, args[arg_offset + 4], 10);
-        const payload = args[arg_offset + 5];
+        const genesis = trimWhitespace(args[arg_offset + 1]);
+        const block = trimWhitespace(args[arg_offset + 2]);
+        try rejectBadEncoding(genesis);
+        try rejectBadEncoding(block);
+        const long_count = try std.fmt.parseInt(u64, trimWhitespace(args[arg_offset + 3]), 10);
+        const short_count = try std.fmt.parseInt(u32, trimWhitespace(args[arg_offset + 4]), 10);
+        const payload = trimWhitespace(args[arg_offset + 5]);
 
         var db = storm.Storm.init(1);
         defer db.deinit(arena);
@@ -130,8 +150,11 @@ pub fn main(init: std.process.Init) !void {
             return;
         }
 
-        const genesis = args[arg_offset + 1];
-        const block = args[arg_offset + 2];
+        const genesis = trimWhitespace(args[arg_offset + 1]);
+        const block = trimWhitespace(args[arg_offset + 2]);
+
+        try rejectBadEncoding(genesis);
+        try rejectBadEncoding(block);
 
         try store.queryJsonl(
             io,

@@ -2,11 +2,7 @@ const std = @import("std");
 const record = @import("record.zig");
 
 fn cleanPsi(psi: []const u8) []const u8 {
-    if (std.mem.startsWith(u8, psi, "[<:") and std.mem.endsWith(u8, psi, ":>]")) {
-        return psi[3 .. psi.len - 3];
-    }
-
-    return psi;
+    return std.mem.trim(u8, psi, " \t\r\n[]<>:");
 }
 
 fn recordPath(
