@@ -117,13 +117,15 @@ pub fn main(init: std.process.Init) !void {
         var db = storm.Storm.init(1);
         defer db.deinit(arena);
 
-        const rec = db.ingest(
+        var rec = db.ingest(
             block,
             long_count,
             short_count,
             payload,
         );
 
+        rec.psi = try parsePsi(block);
+        
         try store.appendJsonl(
             io,
             arena,
